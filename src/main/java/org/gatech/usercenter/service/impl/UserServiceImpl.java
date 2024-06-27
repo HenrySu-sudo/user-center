@@ -6,7 +6,9 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.gatech.usercenter.common.errorCode;
 import org.gatech.usercenter.entity.User;
+import org.gatech.usercenter.exception.businessException;
 import org.gatech.usercenter.mapper.UserMapper;
 import org.gatech.usercenter.service.UserService;
 import org.springframework.stereotype.Service;
@@ -37,20 +39,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public long userRegister(String userAccount,String userPassword,String checkedPassword){
 
         if(StringUtils.isAnyBlank(userAccount,userPassword,checkedPassword)){
-            return -1;
+            throw new businessException(errorCode.NULL_ERROR);
         }
-        if(userAccount.length()<4) return -1;
-        if(!userPassword.equals(checkedPassword)) return -1;
-        if(userPassword.length()<8) return -1;
+        if(userAccount.length()<4) {
+            throw new businessException(errorCode.PARAMS_ERROR,"用户名长度过短");
+        };
+        if(!userPassword.equals(checkedPassword)){
+            throw new businessException(errorCode.PARAMS_ERROR,"两次密码不等");
+        };
+        if(userPassword.length()<8) {
+            throw new businessException(errorCode.PARAMS_ERROR,"密码过短");
+        };
 
         String accountPattern="[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
         Matcher matcher=Pattern.compile(accountPattern).matcher(userAccount);
-        if(matcher.find()) return -1;
+        if(matcher.find()) {
+            throw new businessException(errorCode.PARAMS_ERROR,"用户名包含特殊符号");
+        };
 
         QueryWrapper<User> queryWrapper=new QueryWrapper<>();
         queryWrapper.eq("userAccount",userAccount);
         long count = userMapper.selectCount(queryWrapper);
-        if(count>0) return -1;
+        if(count>0) {
+            throw new businessException(errorCode.PARAMS_ERROR,"该用户名已经注册");
+        };
 
         String encryptPassword= DigestUtils.md5DigestAsHex((SALT+userPassword).getBytes());
 
@@ -62,7 +74,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         userMapper.insert(user);
 
         if(user.getId()==null){
-            return -1;
+            throw new businessException(errorCode.SYSTEM_ERROR,"请重试");
         }
 
         return user.getId();
@@ -70,12 +82,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public User userLogin(String userAccount, String userPassword, HttpServletRequest httpServletRequest) {
-        if(StringUtils.isAnyBlank(userAccount,userPassword))    return null;
-        if(userAccount.length()<4) return null;
-        if(userPassword.length()<8) return null;
+        if(StringUtils.isAnyBlank(userAccount,userPassword))  {
+            throw new businessException(errorCode.NULL_ERROR);
+        };
+        if(userAccount.length()<4) {
+            throw new businessException(errorCode.PARAMS_ERROR,"用户名过短");
+        };
+        if(userPassword.length()<8) {
+            throw new businessException(errorCode.NULL_ERROR,"密码错误");
+        };
         String accountPattern="[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
         Matcher matcher=Pattern.compile(accountPattern).matcher(userAccount);
-        if(matcher.find()) return null;
+        if(matcher.find()) {
+            throw new businessException(errorCode.PARAMS_ERROR);
+        };
 
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
 
@@ -84,7 +104,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         userQueryWrapper.eq("userPassword",encryptPassword);
         User user = userMapper.selectOne(userQueryWrapper);
 
-        if(user==null) return null;
+        if(user==null) {
+            throw new businessException(errorCode.PARAMS_ERROR,"密码或账户错误");
+        };
 
         user=hideUserInfo(user);
 
@@ -93,7 +115,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     public List<User> userSearch(String userName,HttpServletRequest httpServletRequest){
-        if(!isAdmin(httpServletRequest)) return null;
+        if(!isAdmin(httpServletRequest)) {
+            throw new businessException(errorCode.NO_AUTH);
+        };
 
         QueryWrapper<User> queryWrapper=new QueryWrapper<>();
 
@@ -106,7 +130,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     public boolean deleteUser(long id, HttpServletRequest httpServletRequest){
-        if(!isAdmin(httpServletRequest)) return false;
+        if(!isAdmin(httpServletRequest)) {
+            throw new businessException(errorCode.NO_AUTH);
+        };
         boolean res=this.removeById(id);
         return res;
     }
