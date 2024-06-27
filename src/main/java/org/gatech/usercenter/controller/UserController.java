@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.gatech.usercenter.constant.userConstant.USER_LOGIN_STATE;
+
 @RestController
 @RequestMapping("/user")
 @Slf4j
@@ -26,6 +28,7 @@ public class UserController {
 
     @PostMapping("/register")
     public long userRegister(@RequestBody userRegisterRequest userRegisterRequest){
+
         if(userRegisterRequest == null) return -1;
         String userName=userRegisterRequest.getUserName();
         String userPassword=userRegisterRequest.getUserPassword();
@@ -40,12 +43,12 @@ public class UserController {
 
     @PostMapping("/login")
     public User userdoLogin(@RequestBody userLoginRequest userLoginRequest, HttpServletRequest httpServletRequest){
-        log.info("Called");
+
         if(userLoginRequest==null) return null;
         String userName=userLoginRequest.getUserName();
-        log.info(userName);
+
         String userPassword=userLoginRequest.getUserPassword();
-        log.info(userPassword);
+
 
         if(StringUtils.isAnyBlank(userName,userPassword)) return null;
 
@@ -62,5 +65,13 @@ public class UserController {
     @GetMapping("/delete")
     public boolean deleteUser(long id,HttpServletRequest httpServletRequest){
         return userService.deleteUser(id,httpServletRequest);
+    }
+
+    @RequestMapping("/current")
+    public User currentUser(HttpServletRequest httpServletRequest){
+        User currentUser = (User) httpServletRequest.getSession().getAttribute(USER_LOGIN_STATE);
+        long id=currentUser.getId();
+        User user=userService.getById(id);
+        return userService.hideUserInfo(user);
     }
 }

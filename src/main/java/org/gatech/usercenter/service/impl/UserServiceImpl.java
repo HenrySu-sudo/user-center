@@ -35,6 +35,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     final static private String  SALT="henry";
     public long userRegister(String userAccount,String userPassword,String checkedPassword){
+
         if(StringUtils.isAnyBlank(userAccount,userPassword,checkedPassword)){
             return -1;
         }
