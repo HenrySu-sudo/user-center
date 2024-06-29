@@ -76,7 +76,7 @@ public class UserController {
         return resultutils.success(userService.hideUserInfo(user));
     }
 
-    @PostMapping("/logout")
+    @PostMapping("/logout") 
     public generalRespon<Integer> userLogout(HttpServletRequest httpServletRequest){
         if(httpServletRequest==null){
             throw new businessException(errorCode.PARAMS_ERROR);
