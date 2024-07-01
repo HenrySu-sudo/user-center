@@ -1,5 +1,5 @@
 # Docker 镜像构建
-FROM maven:3.5-jdk-8-alpine as builder
+FROM maven:3.9.8-amazoncorretto-21  as builder
 
 # Copy local code to the container image.
 WORKDIR /app
