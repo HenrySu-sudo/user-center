@@ -22,7 +22,7 @@ import static org.gatech.usercenter.constant.userConstant.USER_LOGIN_STATE;
 @RestController
 @RequestMapping("/user")
 @Slf4j
-@CrossOrigin(origins = "http://223.4.215.83/")
+@CrossOrigin(origins = "http://223.4.215.83")
 public class UserController {
 
     @Resource
