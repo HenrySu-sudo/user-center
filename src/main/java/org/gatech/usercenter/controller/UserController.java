@@ -19,10 +19,10 @@ import java.util.List;
 
 import static org.gatech.usercenter.constant.userConstant.USER_LOGIN_STATE;
 
+@CrossOrigin(origins = "http://223.4.215.83")
 @RestController
 @RequestMapping("/user")
 @Slf4j
-@CrossOrigin(origins = "http://223.4.215.83")
 public class UserController {
 
     @Resource
